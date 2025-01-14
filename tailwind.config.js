@@ -1,9 +1,32 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [],
+  content: [
+    "./src/**/*.{html,js,jsx,tsx}", 
+    "./src/components/**/*.{html,js,jsx,tsx}"
+  ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        syne: ['"Syne"', 'sans-serif'],
+      },
+      colors: {
+        primary: "#297bff", // Добавляем кастомный цвет с именем "primary"
+        gray: '#2a2a2ab2',
+        middleGray: 'rgba(235, 235, 245, 0.3)',
+        lightGray: "#fff"
+      },
+      backgroundColor: {
+        primary: "#1c1c1e", // Добавляем кастомный цвет с именем "primary"
+      },
+      backgroundImage: {
+        buttonGradient: "linear-gradient(123deg, #6aa3ff 0%, #3180ff 100%)",
+      },
+      boxShadow: {
+        custom: "0 2px 6px 0 rgba(178, 178, 178, 0.2)", // Ваше значение
+      },
+
+    },
   },
   plugins: [],
 }
-

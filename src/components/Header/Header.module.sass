@@ -1,0 +1,124 @@
+.container
+    width: 100%
+    display: flex 
+    flex-direction: row
+
+    justify-content: space-between
+    align-items: center
+
+    margin-top: 20px
+
+    .mobileBtn
+        display: none
+
+    .logo
+        display: flex
+        flex-direction: row
+        justify-content: flex-start
+        align-items: center
+        gap: 0px
+        cursor: pointer
+
+        img
+            width: 100px
+
+        .logoCol
+            display: flex
+            flex-direction: column
+
+            justify-content: flex-start
+            align-items: flex-start
+
+            gap: 5px
+
+            
+            
+
+            h1
+                color: #b632d9
+                font-weight: 1000
+
+                font-size: 23px
+                line-height: 100%
+                
+            .whiteText
+                color: white
+
+    .nav
+        display: flex
+        flex-direction: row
+
+        justify-content: flex-start
+        align-items: center
+
+        gap: 40px 
+
+        p
+            color: white
+            cursor: pointer
+
+            font-weight: bolder
+
+        button
+            width: 200px
+            height: 50px
+            border-radius: 40px
+
+            border: none
+            background: none
+
+            border: 1px solid #b632d9
+            color: white
+
+            font-weight: bolder
+            display: flex
+            justify-content: center
+            align-items: center
+
+@media screen and ( max-width:  750px)
+    .container
+        margin-top: 10px
+        justify-content: space-between
+
+        .mobileBtn
+            display: flex
+            width: 100px
+            height: 40px
+            border-radius: 40px
+
+            border: none
+            background: none
+
+            border: 1px solid #b632d9
+            color: white
+
+            font-weight: bolder
+            display: flex
+            justify-content: center
+            align-items: center
+        .logo 
+            // display: none
+            img
+                width: 40px
+
+            .logoCol
+                h1
+                    font-size: 14px
+
+                
+
+        .nav
+            gap: 10px
+            width: 100%
+            display: none
+
+            justify-content: space-between
+            
+
+            p
+                font-size: 14px
+
+            button
+                width: 100px
+                height: 30px
+                font-size: 14px
