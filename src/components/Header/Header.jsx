@@ -12,7 +12,7 @@ function Header() {
     if (id) {
       axios.get(`/getUserById/${id}`).then((res) => {
         if (res.data) {
-          setPath('/cabinet')
+          setPath('/cabinet/old')
         }
       });
     } 

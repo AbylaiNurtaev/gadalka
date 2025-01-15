@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "../../axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import s from "./Cabinet.module.sass";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -11,6 +11,7 @@ function Cabinet() {
   const [matrix, setMatrix] = useState(null);
   const navigate = useNavigate();
   const matrixRef = useRef();
+  const { status } = useParams()
 
   // Функция для расчёта матрицы
   function calculateMatrix(dob) {
@@ -55,6 +56,16 @@ function Cabinet() {
     return { A, B, C, D, E, J, K, L, M, O, P, Q, N, S, T, F, G, H, I, L1, L2, F1, F2, G1, G2, H1, H2, I1, I2, R, R1, R2 };
   }
 
+  function calculateCompatibilityMatrix(matrix1, matrix2) {
+    const result = {};
+    for (const key in matrix1) {
+      if (matrix1.hasOwnProperty(key) && matrix2.hasOwnProperty(key)) {
+        result[key] = matrix1[key] + matrix2[key];
+      }
+    }
+    return result;
+  }
+  
   const generatePDF = async () => {
     if (matrixRef.current) {
       const pdf = new jsPDF();
@@ -87,14 +98,40 @@ function Cabinet() {
 
 
   useEffect(() => {
+    const tab = localStorage.getItem('tab')
     if (id) {
       axios.get(`/getUserById/${id}`).then((res) => {
-        if (res.data) {
+        if (res.data && tab != "Совместимость") {
           setUser(res.data);
 
           // Расчёт матрицы по дате рождения пользователя
-          const result = calculateMatrix("10.02.2000");
-          setMatrix(result);
+          if(status == 'new'){
+            const date = localStorage.getItem('date')
+            axios.post(`/updateDate/${id}`, {
+              date
+            })
+            .then(response => {
+              if(response.data){
+                const result = calculateMatrix(date);
+                setMatrix(result);
+              }
+            })
+          }else{
+            const result = calculateMatrix(res.data.date);
+            setMatrix(result);
+          }
+        }else{
+          setUser(res.data);
+
+          if(status == "new"){
+            const date1 = localStorage.getItem('date1')
+            const date2 = localStorage.getItem('date2')
+            axios.post(`/updateDate/${id}`, {
+              date1, date2
+            })
+          }else{
+            
+          }
         }
       });
     } else {
