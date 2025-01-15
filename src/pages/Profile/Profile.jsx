@@ -36,7 +36,7 @@ function Profile() {
       const response = await axios.post('/login', { email, password });
       console.log('Login Success:', response.data);
       localStorage.setItem('id', response?.data?._id)
-      navigate('/cabinet')
+      navigate('/cabinet/old')
     } catch (error) {
       console.error('Login Error:', error.response?.data || error.message);
     }
