@@ -14,6 +14,10 @@ function Header() {
         if (res.data) {
           setPath('/cabinet/old')
         }
+      })
+      .catch(err => {
+        console.log(err)
+        localStorage.clear()
       });
     } 
   }, []);
@@ -30,7 +34,7 @@ function Header() {
         <div className={s.nav}>
           <p onClick={() => navigate('/')}>Главная</p>
           <p onClick={() => navigate(path)}>Профиль</p>
-          <button >Рассчитать матрицу</button>
+          <button onClick={() => navigate('/')}>Рассчитать матрицу</button>
         </div>
           <button onClick={() => navigate(path)} className={s.mobileBtn}>Войти</button>
     </div>

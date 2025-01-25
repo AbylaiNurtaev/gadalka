@@ -1,14 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Matrix from '../../components/Matrix/Matrix';
 import s from './HomePage.module.sass'
 import { useNavigate } from 'react-router-dom';
+import Loading from '../../components/Loading/Loading';
 
 function HomePage() {
   const id = localStorage.getItem('id')
   const navigate = useNavigate()
+  const [popup, setPopup] = useState(false)
 
+  const scrollToTop = () => {
+    window.scrollTo({top: 0, behavior: "smooth"})
+  }
+  const handleClose = () => {
+    setPopup(false)
+  }
+
+  const openPopup = () => {
+    setPopup(true)
+  }
   return (
     <>
+    {
+      popup == true &&
+      <Loading handleClose={handleClose}></Loading>
+    }
       <div className="w-full h-[800px]">
         <div
           className="h-full w-full bg-cover bg-center flex flex-col justify-start items-center"
@@ -20,7 +36,7 @@ function HomePage() {
 
           <p className={`text-white font-sans text-[23px] ${s.par}`}>Узнайте свое предназначение, сильную сторону, таланты и</p>
           <p className={`text-white font-sans text-[23px] mb-[50px] ${s.par}`}>предрасположенности и начните менять свою жизнь к лучшему!</p>
-          <Matrix></Matrix>
+          <Matrix openPopup={openPopup}></Matrix>
         </div>
       </div>
 
@@ -32,7 +48,7 @@ function HomePage() {
               <p className='mt-4'>Матрица судьбы это система самопознания, основанная на сочетании нумерологии, астрологии и Таро.</p>
               <p className='mt-4'>Матрица судьбы — позволяет понять собственное предназначение, для чего вы существуете и что должны делать, чтобы выполнить волю Вселенной. Осознавая своё предназначение, человек получает возможность расслабиться и развиваться в гармонии с самим собой.</p>
               <p className='mt-4'>У каждого человека есть личная программа. Она зависит от даты рождения и, рассчитав её, можно понять, почему не удаётся достичь успеха в определённых сферах, какое направление для собственного развития выбрать для того, чтобы преуспеть.</p>
-              <button>Рассчитать матрицу</button>
+              <button onClick={scrollToTop}>Рассчитать матрицу</button>
             </div>
 
             <img src="https://matricaonline.com/m_dark/img/about-img_01.webp" alt="" />
@@ -49,7 +65,7 @@ function HomePage() {
               <p className='mt-2'>Обретите баланс между своими желаниями, возможностями и действиями, научитесь слышать свой внутренний голос.</p>
               <p className='font-semibold text-[24px] mt-6'>Карьерный рост</p>
               <p className='mt-2'>Найдите свои ключевые области успеха, определите стратегию достижения целей и увеличьте доход, работая в удовольствие.</p>
-              <button>Рассчитать матрицу</button>
+              <button onClick={scrollToTop}>Рассчитать матрицу</button>
             </div>
 
 

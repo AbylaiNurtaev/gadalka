@@ -4,13 +4,20 @@ import { useNavigate, useParams } from "react-router-dom";
 import s from "./Cabinet.module.sass";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import DestinyMatrix from "../../components/DestinyMatrix/DestinyMatrix";
+import Sovmest from "../../components/Sovmest/Sovmest";
+
+
 
 function Cabinet() {
   const id = localStorage.getItem("id");
+  const tab = localStorage.getItem("tab")
   const [user, setUser] = useState(null);
   const [matrix, setMatrix] = useState(null);
+  const [matrix1, setMatrix1] = useState(null);
   const navigate = useNavigate();
   const matrixRef = useRef();
+  const matrixRef2 = useRef();
   const { status } = useParams()
 
   // Функция для расчёта матрицы
@@ -52,57 +59,102 @@ function Cabinet() {
     const R = M + L;
     const R1 = R + M;
     const R2 = R + L;
-
+    
     return { A, B, C, D, E, J, K, L, M, O, P, Q, N, S, T, F, G, H, I, L1, L2, F1, F2, G1, G2, H1, H2, I1, I2, R, R1, R2 };
   }
 
-  function calculateCompatibilityMatrix(matrix1, matrix2) {
-    const result = {};
-    for (const key in matrix1) {
-      if (matrix1.hasOwnProperty(key) && matrix2.hasOwnProperty(key)) {
-        result[key] = matrix1[key] + matrix2[key];
-      }
-    }
-    return result;
-  }
-  
+  // function calculateCompatibilityMatrix(matrix1, matrix2) {
+  //   const result = {};
+  //   for (const key in matrix1) {
+  //     if (matrix1.hasOwnProperty(key) && matrix2.hasOwnProperty(key)) {
+  //       result[key] = matrix1[key] + matrix2[key];
+  //     }
+  //   }
+  //   return result;
+  // }
   const generatePDF = async () => {
+    matrixRef2.current.toggleAllSections(true); // Вызываем функцию из дочернего компонента
+  
+    // Ждём завершения обновления состояния
+    await new Promise((resolve) => setTimeout(resolve, 300)); // Убедитесь, что время совпадает с CSS-анимацией
+  
     if (matrixRef.current) {
       const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.width;
+      const pageHeight = pdf.internal.pageSize.height;
+  
+      // Функция для добавления изображения с масштабированием и постраничной разбивкой
+      const addImageToPDF = async (canvas, x, y, imgWidth, pdf) => {
+        const imgData = canvas.toDataURL("image/png");
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+        if (imgHeight <= pageHeight - y) {
+          // Если изображение помещается на одну страницу
+          pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+        } else {
+          // Если изображение не помещается, разбиваем на страницы
+          let remainingHeight = canvas.height;
+          let yOffset = 0;
+  
+          while (remainingHeight > 0) {
+            const croppedCanvas = document.createElement("canvas");
+            croppedCanvas.width = canvas.width;
+            croppedCanvas.height = Math.min(canvas.height, (pageHeight - y) * canvas.width / imgWidth);
+            const ctx = croppedCanvas.getContext("2d");
+  
+            ctx.drawImage(canvas, 0, yOffset, canvas.width, croppedCanvas.height, 0, 0, croppedCanvas.width, croppedCanvas.height);
+  
+            const croppedImgData = croppedCanvas.toDataURL("image/png");
+            pdf.addImage(croppedImgData, "PNG", x, y, imgWidth, (croppedCanvas.height * imgWidth) / croppedCanvas.width);
+  
+            remainingHeight -= croppedCanvas.height;
+            yOffset += croppedCanvas.height;
+  
+            if (remainingHeight > 0) pdf.addPage();
+          }
+        }
+      };
   
       // Секция матрицы
       const matrixCanvas = await html2canvas(matrixRef.current);
-      const matrixImgData = matrixCanvas.toDataURL("image/png");
-      const imgWidth = 190; // Ширина изображения в PDF
-      const imgHeight = (matrixCanvas.height * imgWidth) / matrixCanvas.width; // Пропорциональная высота
-  
-      pdf.addImage(matrixImgData, "PNG", 10, 30, imgWidth, imgHeight);
+      await addImageToPDF(matrixCanvas, 10, 30, 190, pdf);
   
       // Секция карты здоровья
-      const chakraContainer = document.querySelector(".chakra-container"); // Добавим класс для идентификации
+      const chakraContainer = document.querySelector(".chakra-container");
       if (chakraContainer) {
         const chakraCanvas = await html2canvas(chakraContainer);
-        const chakraImgData = chakraCanvas.toDataURL("image/png");
-        const chakraImgHeight = (chakraCanvas.height * imgWidth) / chakraCanvas.width;
-  
         pdf.addPage(); // Добавляем новую страницу
-        pdf.addImage(chakraImgData, "PNG", 10, 30, imgWidth, chakraImgHeight);
+        await addImageToPDF(chakraCanvas, 10, 30, 190, pdf);
       }
+  
+      // Секция описаний
+      const resultsSection = document.querySelector(".results-section");
+      if (resultsSection) {
+        const resultsCanvas = await html2canvas(resultsSection);
+        pdf.addPage(); // Новая страница для описаний
+        await addImageToPDF(resultsCanvas, 10, 20, 190, pdf);
+      }
+  
+      matrixRef2.current.toggleAllSections(false);
   
       pdf.save("MatrixResults.pdf");
     }
   };
   
   
-
-
-
+  
+  
   useEffect(() => {
     const tab = localStorage.getItem('tab')
+    
     if (id) {
+      
       axios.get(`/getUserById/${id}`).then((res) => {
-        if (res.data && tab != "Совместимость") {
+        console.log("data", res.data);
+        
+        if (res.data && tab != "Совместимость" ) {
           setUser(res.data);
+          
 
           // Расчёт матрицы по дате рождения пользователя
           if(status == 'new'){
@@ -119,6 +171,7 @@ function Cabinet() {
           }else{
             const result = calculateMatrix(res.data.date);
             setMatrix(result);
+            
           }
         }else{
           setUser(res.data);
@@ -129,15 +182,35 @@ function Cabinet() {
             axios.post(`/updateDate/${id}`, {
               date1, date2
             })
+            .then(response => {
+              console.log("upd", response.data);
+              
+              if(response.data){
+                const result = calculateMatrix(date1);
+                const result1 = calculateMatrix(date2);
+                setMatrix(result);
+                setMatrix1(result1);
+              }
+            })
           }else{
-            
+            const result = calculateMatrix(res.data.date1);
+            const result1 = calculateMatrix(res.data.date2);
+            setMatrix(result)
+            setMatrix1(result1)
+
           }
         }
       });
     } else {
       navigate("/profile");
     }
-  }, []);
+  }, [status]);
+
+  
+  
+  
+  
+  
 
   const { A, B, C, F, G, D, E, P, Q, N, S, O, L, L1, L2, J, I, I1, I2, K, T, M, H, H1, H2, R, R1, R2, G1, G2, F1, F2 } = matrix || {};
   const chakraData = [
@@ -157,7 +230,7 @@ function Cabinet() {
           <h1 className={`${s.name} font-sans text-white mt-[100px]`}>{user?.name}</h1>
           <p className={`${s.email} font-sans text-white`}>{user?.email}</p>
           <h1 className={`${s.name} font-sans text-white mt-5`}>Результаты вашей матрицы</h1>
-          {matrix && (
+          {matrix && tab != "Совместимость" && (
             <div className={`${s.block} flex justify-between items-center w-[60%] mt-[50px]`}>
 <div className={`${s.karta} chakra-container w-[450px] flex flex-col justify-start items-center`}>
   <h1 className="font-sans text-white font-bold mb-4 w-[100%] text-[20px]">Карта здоровья</h1>
@@ -212,6 +285,129 @@ function Cabinet() {
             
             </div>
           )}
+
+          {
+            matrix && matrix1 && tab == "Совместимость" &&
+            <div className={s.sovm}>
+
+            <div className={`${s.upper} relative`} style={{ transform: "scale(1)", transformOrigin: "center" }}>
+            <div className={s.matrix} ref={matrixRef}>
+              <img src="/images/matrix.png"  className="rounded-[50%] absolute z-0 w-[350px]" alt="" />
+              <h1 className="absolute top-[160px] left-[17px] text-white font-bold">{A}</h1>
+              <h1 className="absolute top-[265px] left-[62px] text-black font-bold">{I}</h1>
+              <h1 className="absolute top-[251px] left-[84px] text-black font-bold text-[8px]">{I1}</h1>
+              <h1 className="absolute top-[237px] left-[101px] text-black font-bold text-[8px]">{I2}</h1>
+              <h1 className="absolute top-[10px] left-[168px] text-white font-bold">{B}</h1>
+              <h1 className="absolute top-[42px] left-[170px] text-white font-medium text-[10px]">{P}</h1>
+              <h1 className="absolute top-[64px] left-[170.5px] text-white font-medium text-[8px]">{K}</h1>
+              <h1 className="absolute top-[110px] left-[170px] text-white font-medium text-[8px]">{T}</h1>
+              <h1 className="absolute top-[94px] left-[244px] text-black font-medium text-[8px]">{G1}</h1>
+              <h1 className="absolute top-[80px] left-[258px] text-black font-medium text-[8px]">{G2}</h1>
+              <h1 className="absolute top-[52px] left-[62px] text-black font-bold">{F}</h1>
+              <h1 className="absolute top-[80px] left-[85px] text-black font-medium text-[10px]">{F1}</h1>
+              <h1 className="absolute top-[94px] left-[101px] text-black font-medium text-[8px]">{F2}</h1>
+              <h1 className="absolute top-[52px] left-[272px] text-black font-bold">{G}</h1>
+              <h1 className="absolute top-[165px] left-[272px] text-white font-medium text-[8px]">{L}</h1>
+              <h1 className="absolute top-[165px] left-[69px] text-white font-medium text-[8px]">{S}</h1>
+              <h1 className="absolute top-[164px] left-[49px] text-white font-medium text-[8px]">{O}</h1>
+              <h1 className="absolute top-[163px] left-[292px] text-black font-medium text-[10px]">{Q}</h1>
+              <h1 className="absolute top-[165px] left-[218px] text-black font-medium text-[10px]">{L1}</h1>
+              <h1 className="absolute top-[165px] left-[198px] text-black font-medium text-[10px]">{L2}</h1>
+              <h1 className="absolute top-[162px] left-[168px] text-black font-medium text-[13px]">{E}</h1>
+              <h1 className="absolute top-[312px] left-[168px] text-white font-medium text-[13px]">{D}</h1>
+              <h1 className="absolute top-[268px] left-[273px] text-black font-medium text-[13px]">{H}</h1>
+              <h1 className="absolute top-[252px] left-[257px] text-black font-medium text-[8px]">{H1}</h1>
+              <h1 className="absolute top-[238px] left-[243px] text-black font-medium text-[8px]">{H2}</h1>
+              <h1 className="absolute top-[212px] left-[218px] text-black font-medium text-[7px]">{R}</h1>
+              <h1 className="absolute top-[233px] left-[208px] text-black font-medium text-[7px]">{R1}</h1>
+              <h1 className="absolute top-[207px] left-[238px] text-black font-medium text-[6px]">{R2}</h1>
+              <h1 className="absolute top-[286px] left-[170px] text-black font-medium text-[10px]">{N}</h1>
+              <h1 className="absolute top-[266px] left-[170px] text-white font-medium text-[8px]">{M}</h1>
+              <h1 className="absolute top-[165px] left-[119px] text-white font-medium text-[7px]">{S}</h1>
+              <h1 className="absolute top-[159px] left-[319px] text-white font-bold">{C}</h1>
+            </div>
+          </div>
+            <div className={`${s.upper} relative`} style={{ transform: "scale(1)", transformOrigin: "center" }}>
+            <div className={s.matrix} ref={matrixRef}>
+              <img src="/images/matrix.png"  className="rounded-[50%] absolute z-0 w-[350px]" alt="" />
+              <h1 className="absolute top-[160px] left-[17px] text-white font-bold">{matrix1.A}</h1>
+              <h1 className="absolute top-[265px] left-[62px] text-black font-bold">{matrix1.I}</h1>
+              <h1 className="absolute top-[251px] left-[84px] text-black font-bold text-[8px]">{matrix1.I1}</h1>
+              <h1 className="absolute top-[237px] left-[101px] text-black font-bold text-[8px]">{matrix1.I2}</h1>
+              <h1 className="absolute top-[10px] left-[168px] text-white font-bold">{matrix1.B}</h1>
+              <h1 className="absolute top-[42px] left-[170px] text-white font-medium text-[10px]">{matrix1.P}</h1>
+              <h1 className="absolute top-[64px] left-[170.5px] text-white font-medium text-[8px]">{matrix1.K}</h1>
+              <h1 className="absolute top-[110px] left-[170px] text-white font-medium text-[8px]">{matrix1.T}</h1>
+              <h1 className="absolute top-[94px] left-[244px] text-black font-medium text-[8px]">{matrix1.G1}</h1>
+              <h1 className="absolute top-[80px] left-[258px] text-black font-medium text-[8px]">{matrix1.G2}</h1>
+              <h1 className="absolute top-[52px] left-[62px] text-black font-bold">{matrix1.F}</h1>
+              <h1 className="absolute top-[80px] left-[85px] text-black font-medium text-[10px]">{matrix1.F1}</h1>
+              <h1 className="absolute top-[94px] left-[101px] text-black font-medium text-[8px]">{matrix1.F2}</h1>
+              <h1 className="absolute top-[52px] left-[272px] text-black font-bold">{matrix1.G}</h1>
+              <h1 className="absolute top-[165px] left-[272px] text-white font-medium text-[8px]">{matrix1.L}</h1>
+              <h1 className="absolute top-[165px] left-[69px] text-white font-medium text-[8px]">{matrix1.S}</h1>
+              <h1 className="absolute top-[164px] left-[49px] text-white font-medium text-[8px]">{matrix1.O}</h1>
+              <h1 className="absolute top-[163px] left-[292px] text-black font-medium text-[10px]">{matrix1.Q}</h1>
+              <h1 className="absolute top-[165px] left-[218px] text-black font-medium text-[10px]">{matrix1.L1}</h1>
+              <h1 className="absolute top-[165px] left-[198px] text-black font-medium text-[10px]">{matrix1.L2}</h1>
+              <h1 className="absolute top-[162px] left-[168px] text-black font-medium text-[13px]">{matrix1.E}</h1>
+              <h1 className="absolute top-[312px] left-[168px] text-white font-medium text-[13px]">{matrix1.D}</h1>
+              <h1 className="absolute top-[268px] left-[273px] text-black font-medium text-[13px]">{matrix1.H}</h1>
+              <h1 className="absolute top-[252px] left-[257px] text-black font-medium text-[8px]">{matrix1.H1}</h1>
+              <h1 className="absolute top-[238px] left-[243px] text-black font-medium text-[8px]">{matrix1.H2}</h1>
+              <h1 className="absolute top-[212px] left-[218px] text-black font-medium text-[7px]">{matrix1.R}</h1>
+              <h1 className="absolute top-[233px] left-[208px] text-black font-medium text-[7px]">{matrix1.R1}</h1>
+              <h1 className="absolute top-[207px] left-[238px] text-black font-medium text-[6px]">{matrix1.R2}</h1>
+              <h1 className="absolute top-[286px] left-[170px] text-black font-medium text-[10px]">{matrix1.N}</h1>
+              <h1 className="absolute top-[266px] left-[170px] text-white font-medium text-[8px]">{matrix1.M}</h1>
+              <h1 className="absolute top-[165px] left-[119px] text-white font-medium text-[7px]">{matrix1.S}</h1>
+              <h1 className="absolute top-[159px] left-[319px] text-white font-bold">{matrix1.C}</h1>
+            </div>
+          </div>
+            </div>
+          }
+          <h2 className="font-sans text-white font-black text-[24px] mt-[30px]">Общая матрица</h2>
+
+          {
+            matrix && matrix1 && tab == "Совместимость" &&
+            <div className={`${s.upper} relative`} style={{ marginTop: "50px" ,transform: "scale(1.5)", transformOrigin: "center" }}>
+              <div className={s.matrix} ref={matrixRef}>
+              <img src="/images/matrix.png"  className="rounded-[50%] absolute z-0 w-[350px]" alt="" />
+              <h1 className="absolute top-[160px] left-[17px] text-white font-bold">{matrix1.A + A}</h1>
+              <h1 className="absolute top-[265px] left-[62px] text-black font-bold">{matrix1.I + I}</h1>
+              <h1 className="absolute top-[251px] left-[84px] text-black font-bold text-[8px]">{matrix1.I1 + I1}</h1>
+              <h1 className="absolute top-[237px] left-[101px] text-black font-bold text-[8px]">{matrix1.I2 + I2}</h1>
+              <h1 className="absolute top-[10px] left-[168px] text-white font-bold">{matrix1.B + B}</h1>
+              <h1 className="absolute top-[42px] left-[170px] text-white font-medium text-[10px]">{matrix1.P + P}</h1>
+              <h1 className="absolute top-[64px] left-[170.5px] text-white font-medium text-[8px]">{matrix1.K + K}</h1>
+              <h1 className="absolute top-[110px] left-[170px] text-white font-medium text-[8px]">{matrix1.T + T}</h1>
+              <h1 className="absolute top-[94px] left-[244px] text-black font-medium text-[8px]">{matrix1.G1 + G1}</h1>
+              <h1 className="absolute top-[80px] left-[258px] text-black font-medium text-[8px]">{matrix1.G2 + G2}</h1>
+              <h1 className="absolute top-[52px] left-[62px] text-black font-bold">{matrix1.F + F}</h1>
+              <h1 className="absolute top-[80px] left-[85px] text-black font-medium text-[10px]">{matrix1.F1 + F1}</h1>
+              <h1 className="absolute top-[94px] left-[101px] text-black font-medium text-[8px]">{matrix1.F2 + F2}</h1>
+              <h1 className="absolute top-[52px] left-[272px] text-black font-bold">{matrix1.G + G}</h1>
+              <h1 className="absolute top-[165px] left-[272px] text-white font-medium text-[8px]">{matrix1.L + L}</h1>
+              <h1 className="absolute top-[165px] left-[69px] text-white font-medium text-[8px]">{matrix1.S + S}</h1>
+              <h1 className="absolute top-[164px] left-[49px] text-white font-medium text-[8px]">{matrix1.O + O}</h1>
+              <h1 className="absolute top-[163px] left-[292px] text-black font-medium text-[10px]">{matrix1.Q + Q}</h1>
+              <h1 className="absolute top-[165px] left-[218px] text-black font-medium text-[10px]">{matrix1.L1 + L1}</h1>
+              <h1 className="absolute top-[165px] left-[198px] text-black font-medium text-[10px]">{matrix1.L2 + L2}</h1>
+              <h1 className="absolute top-[162px] left-[168px] text-black font-medium text-[13px]">{matrix1.E + E}</h1>
+              <h1 className="absolute top-[312px] left-[168px] text-white font-medium text-[13px]">{matrix1.D + D}</h1>
+              <h1 className="absolute top-[268px] left-[273px] text-black font-medium text-[13px]">{matrix1.H + H}</h1>
+              <h1 className="absolute top-[252px] left-[257px] text-black font-medium text-[8px]">{matrix1.H1 + H1}</h1>
+              <h1 className="absolute top-[238px] left-[243px] text-black font-medium text-[8px]">{matrix1.H2 + H2}</h1>
+              <h1 className="absolute top-[212px] left-[218px] text-black font-medium text-[7px]">{matrix1.R + R}</h1>
+              <h1 className="absolute top-[233px] left-[208px] text-black font-medium text-[7px]">{matrix1.R1 + R1}</h1>
+              <h1 className="absolute top-[207px] left-[238px] text-black font-medium text-[6px]">{matrix1.R2 + R2}</h1>
+              <h1 className="absolute top-[286px] left-[170px] text-black font-medium text-[10px]">{matrix1.N + N}</h1>
+              <h1 className="absolute top-[266px] left-[170px] text-white font-medium text-[8px]">{matrix1.M + M}</h1>
+              <h1 className="absolute top-[165px] left-[119px] text-white font-medium text-[7px]">{matrix1.S + S}</h1>
+              <h1 className="absolute top-[159px] left-[319px] text-white font-bold">{matrix1.C}</h1>
+            </div>
+            </div>
+          }
  <div className="mt-[108px] w-[90%] max-w-[700px] p-6 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 rounded-lg shadow-xl">
     <h2 className="text-2xl font-bold text-white mb-6 text-center">Что означают результаты матрицы?</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -256,6 +452,16 @@ function Cabinet() {
           alt="Загрузка..."
         />
       )}
+      <div className="results-section">
+        {
+          tab == "Совместимость" && matrix && matrix1 &&
+          <Sovmest ref={matrixRef2} matrix={matrix} matrix1={matrix1} />
+        }
+        {
+          tab != "Совместимость" && matrix &&
+        <DestinyMatrix ref={matrixRef2} matrix={matrix} />
+        }
+      </div>
       <button className={s.output} onClick={generatePDF}>Результаты в PDF</button>
     </div>
   );
