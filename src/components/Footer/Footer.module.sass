@@ -1,0 +1,41 @@
+.container
+    display: flex
+    flex-direction: column
+
+    justify-content: center
+    align-items: center
+
+    width: 100%
+    margin-top: 15px
+    margin-bottom: 15px
+
+@media screen and ( max-width:  1060px)
+    .container
+        p
+            font-size: 14px
+
+            
+@media screen and ( max-width:  800px)
+    .container
+        div
+            gap: 25px
+
+            div
+                gap: 0
+
+
+        
+    
+@media screen and ( max-width:  600px)
+    .container
+        div
+            flex-direction: column
+            justify-content: flex-start
+            align-items: flex-start
+
+        
+        .footText
+            text-align: left
+            width: 90%
+            margin-top: 10px
+            

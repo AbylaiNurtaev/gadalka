@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage/HomePage';
 import Header from './components/Header/Header';
 import Profile from './pages/Profile/Profile';
 import Cabinet from './pages/Cabinet/Cabinet';
+import Footer from './components/Footer/Footer';
 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/profile" element={<Profile/>}></Route>
         <Route path="/cabinet/:status" element={<Cabinet/>}></Route>
       </Routes>
+      <Footer></Footer>
     </div>
   );
 }

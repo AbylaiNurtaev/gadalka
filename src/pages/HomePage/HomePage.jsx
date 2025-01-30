@@ -59,11 +59,11 @@ function HomePage() {
             <div className={s.left}>
               <h1 className='text-white font-black text-[40px]'>Когда помогает</h1>
               <h1 style={{ color: "#b632d9" }} className='font-black text-[40px]'>Матрица Cудьбы?</h1>
-              <p className='font-semibold text-[24px] mt-6'>Самореализация</p>
+              <p className='font-black text-[24px] mt-6'>Самореализация</p>
               <p className='mt-2'>Поймите свои сильные стороны и жизненные ориентиры, чтобы уверенно двигаться к своим целям и раскрыть свой потенциал.</p>
-              <p className='font-semibold text-[24px] mt-6'>Внутренняя гармония</p>
+              <p className='font-black text-[24px] mt-6'>Внутренняя гармония</p>
               <p className='mt-2'>Обретите баланс между своими желаниями, возможностями и действиями, научитесь слышать свой внутренний голос.</p>
-              <p className='font-semibold text-[24px] mt-6'>Карьерный рост</p>
+              <p className='font-black text-[24px] mt-6'>Карьерный рост</p>
               <p className='mt-2'>Найдите свои ключевые области успеха, определите стратегию достижения целей и увеличьте доход, работая в удовольствие.</p>
               <button onClick={scrollToTop}>Рассчитать матрицу</button>
             </div>
