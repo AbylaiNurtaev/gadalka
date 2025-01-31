@@ -40,22 +40,23 @@ function Matrix({openPopup}) {
   };
 
   const handleFormSubmit = (e) => {
-    const id = localStorage.getItem('id')
+    // const id = localStorage.getItem('id')
     e.preventDefault(); // Предотвращаем стандартное поведение формы
-    if(id){
+    // if(id){
 
-      axios.post(`/updateDate/${id}`, {
-        tab: activeTab
-      })
-      .then(response => {
-        if(response.data){
-          console.log("result saved")
-        }
-      })
-      openPopup(); // Вызов функции для открытия попапа
-    }else{
-      navigate('/profile')
-    }
+    //   axios.post(`/updateDate/${id}`, {
+    //     tab: activeTab
+    //   })
+    //   .then(response => {
+    //     if(response.data){
+    //       console.log("result saved")
+    //     }
+    //   })
+    //   openPopup(); // Вызов функции для открытия попапа
+    // }else{
+    //   navigate('/profile')
+    // }
+    openPopup()
   };
 
   const renderForm = () => {

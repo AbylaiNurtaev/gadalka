@@ -23,7 +23,14 @@ function Cabinet() {
   // Функция для расчёта матрицы
   function calculateMatrix(dob) {
     const [day, month, year] = dob.split(".").map(Number);
-
+  
+    function reduceNumber(num) {
+      while (num > 22) {
+        num = num.toString().split("").reduce((sum, digit) => sum + Number(digit), 0);
+      }
+      return num;
+    }
+  
     const A = day;
     const B = month;
     const C = year.toString().split("").reduce((sum, digit) => sum + Number(digit), 0);
@@ -43,24 +50,34 @@ function Cabinet() {
     const G = B + C;
     const H = C + D;
     const I = D + A;
-
+  
     const L2 = F + G + H + I;
     const L1 = E + L2;
     const F2 = F + L2;
     const G2 = G + L2;
     const H2 = H + L2;
     const I2 = I + L2;
-
+  
     const F1 = F + F2;
     const G1 = G + G2;
     const H1 = H + H2;
     const I1 = I + I2;
-
+  
     const R = M + L;
-    const R1 = R + M;
-    const R2 = R + L;
+    const R1 = reduceNumber(R + M);
+    const R2 = reduceNumber(R + L);
     
-    return { A, B, C, D, E, J, K, L, M, O, P, Q, N, S, T, F, G, H, I, L1, L2, F1, F2, G1, G2, H1, H2, I1, I2, R, R1, R2 };
+    return {
+      A: reduceNumber(A), B: reduceNumber(B), C: reduceNumber(C), D: reduceNumber(D), E: reduceNumber(E), 
+      J: reduceNumber(J), K: reduceNumber(K), L: reduceNumber(L), M: reduceNumber(M),
+      O: reduceNumber(O), P: reduceNumber(P), Q: reduceNumber(Q), N: reduceNumber(N),
+      S: reduceNumber(S), T: reduceNumber(T),
+      F: reduceNumber(F), G: reduceNumber(G), H: reduceNumber(H), I: reduceNumber(I),
+      L1: reduceNumber(L1), L2: reduceNumber(L2),
+      F1: reduceNumber(F1), F2: reduceNumber(F2), G1: reduceNumber(G1), G2: reduceNumber(G2),
+      H1: reduceNumber(H1), H2: reduceNumber(H2), I1: reduceNumber(I1), I2: reduceNumber(I2),
+      R: reduceNumber(R), R1, R2
+    };
   }
 
   // function calculateCompatibilityMatrix(matrix1, matrix2) {
@@ -213,15 +230,25 @@ function Cabinet() {
   
 
   const { A, B, C, F, G, D, E, P, Q, N, S, O, L, L1, L2, J, I, I1, I2, K, T, M, H, H1, H2, R, R1, R2, G1, G2, F1, F2 } = matrix || {};
+
+
+  const sumDigits = (num) => {
+    while (num > 22) {
+      num = num.toString().split('').reduce((acc, digit) => acc + Number(digit), 0);
+    }
+    return num;
+  };
+  
   const chakraData = [
-    { name: "Сахасрара", value: A + B, color: "bg-purple-500" },
-    { name: "Аджна", value: J + S, color: "bg-indigo-500" },
-    { name: "Вишудха", value: O + P, color: "bg-blue-400" },
-    { name: "Анахата", value: K + T, color: "bg-green-500" },
-    { name: "Манипура", value: E, color: "bg-yellow-400" },
-    { name: "Свадхистана", value: M + L, color: "bg-orange-400" },
-    { name: "Муладхара", value: D + C, color: "bg-red-500" },
-  ];
+    { name: "Сахасрара", value: sumDigits(A + B), color: "bg-purple-500" },
+    { name: "Аджна", value: sumDigits(J + S), color: "bg-indigo-500" },
+    { name: "Вишудха", value: sumDigits(O + P), color: "bg-blue-400" },
+    { name: "Анахата", value: sumDigits(K + T), color: "bg-green-500" },
+    { name: "Манипура", value: sumDigits(E), color: "bg-yellow-400" },
+    { name: "Свадхистана", value: sumDigits(M + L), color: "bg-orange-400" },
+    { name: "Муладхара", value: sumDigits(D + C), color: "bg-red-500" },
+  ]; 
+  
 
   return (
     <div className={s.container} style={{ background: 'linear-gradient(90deg, rgba(182, 50, 217, 0.2) 0.11%, rgba(84, 116, 255, 0.1) 100%)' }} >
@@ -245,7 +272,7 @@ function Cabinet() {
   ))}
 </div>
 
-              <div className={`${s.upper} relative`} style={{ transform: "scale(1.5)", transformOrigin: "center" }}>
+              <div className={`${s.upper} relative`} style={{ transform: "scale(1)", transformOrigin: "center" }}>
                 <div className={s.matrix} ref={matrixRef}>
                   <img src="/images/matrix.png"  className="rounded-[50%] absolute z-0 w-[350px]" alt="" />
                   <h1 className="absolute top-[160px] left-[17px] text-white font-bold">{A}</h1>
@@ -366,7 +393,10 @@ function Cabinet() {
           </div>
             </div>
           }
+          {
+            matrix && matrix1 && tab == "Совместимость" &&
           <h2 className="font-sans text-white font-black text-[24px] mt-[30px]">Общая матрица</h2>
+          }
 
           {
             matrix && matrix1 && tab == "Совместимость" &&

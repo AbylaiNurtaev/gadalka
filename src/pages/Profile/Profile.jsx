@@ -52,6 +52,7 @@ function Profile() {
       localStorage.setItem('id', response?.data?._id)
       navigate('/cabinet/old')
     } catch (error) {
+      alert('Неверный пароль')
       console.error('Login Error:', error.response?.data || error.message);
     }
   };
@@ -64,12 +65,18 @@ function Profile() {
       return;
     }
     try {
+      const date = localStorage.getItem('date')
       const { email, password, name } = formData;
       const response = await axios.post('/register', { email, password, name });
       console.log('Register Success:', response.data);
       localStorage.setItem('id', response.data._id)
       toggleForm();
-      navigate('/')
+      if(date){
+        navigate('/cabinet/new')
+      }else{
+
+        navigate('/')
+      }
     } catch (error) {
       console.error('Register Error:', error.response?.data || error.message);
       alert("Пользователь с таким email уже существует")

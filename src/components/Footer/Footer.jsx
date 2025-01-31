@@ -11,7 +11,7 @@ function Footer() {
             </div>
             <div className="flex flex-col justify-center items-center w-[300px]">
                 <p className='text-white opacity-55 '>Телефон: +7 (812) 200-46-02</p>
-                <p className='text-white opacity-55 '>Email: matrica-sudby@outlook.com</p>
+                <p className='text-white opacity-55 '>Email: info@1matrica-sudby.ru</p>
             </div>
             <div className="flex flex-col justify-center items-center w-[300px]">
                 <a className='text-white opacity-55  underline' href='/оферта.pdf'>Тарифы</a>
