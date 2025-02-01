@@ -259,18 +259,18 @@ function Cabinet() {
           <h1 className={`${s.name} font-sans text-white mt-5`}>Результаты вашей матрицы</h1>
           {matrix && tab != "Совместимость" && (
             <div className={`${s.block} flex justify-between items-center w-[60%] mt-[50px]`}>
-<div className={`${s.karta} chakra-container w-[450px] flex flex-col justify-start items-center`}>
-  <h1 className="font-sans text-white font-bold mb-4 w-[100%] text-[20px]">Карта здоровья</h1>
-  {chakraData.map((chakra, index) => (
-    <div
-      key={index}
-      className={`flex justify-between items-center w-[100%] p-2 text-white ${chakra.color}`}
-    >
-      <p className="w-[70%]">{chakra.name}</p>
-      <p className="font-bold">{chakra.value}</p>
-    </div>
-  ))}
-</div>
+            <div className={`${s.karta} chakra-container w-[450px] flex flex-col justify-start items-center`}>
+              <h1 className="font-sans text-white font-bold mb-4 w-[100%] text-[20px]">Карта здоровья</h1>
+              {chakraData.map((chakra, index) => (
+                <div
+                  key={index}
+                  className={`flex justify-between items-center w-[100%] p-2 text-white ${chakra.color}`}
+                >
+                  <p className="w-[70%]">{chakra.name}</p>
+                  <p className="font-bold">{chakra.value}</p>
+                </div>
+              ))}
+            </div>
 
               <div className={`${s.upper} relative`} style={{ transform: "scale(1)", transformOrigin: "center" }}>
                 <div className={s.matrix} ref={matrixRef}>
@@ -400,7 +400,7 @@ function Cabinet() {
 
           {
             matrix && matrix1 && tab == "Совместимость" &&
-            <div className={`${s.upper} relative`} style={{ marginTop: "50px" ,transform: "scale(1.5)", transformOrigin: "center" }}>
+            <div className={`${s.upper} relative`} style={{ marginTop: "50px" ,transform: "scale(1)", transformOrigin: "center" }}>
               <div className={s.matrix} ref={matrixRef}>
               <img src="/images/matrix.png"  className="rounded-[50%] absolute z-0 w-[350px]" alt="" />
               <h1 className="absolute top-[160px] left-[17px] text-white font-bold">{matrix1.A + A}</h1>
