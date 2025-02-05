@@ -1,38 +1,40 @@
-import React, { useState } from 'react';
-import axios from '../../axios';
-import s from './Profile.module.sass'
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "../../axios";
+import s from "./Profile.module.sass";
+import { useNavigate } from "react-router-dom";
 
 function Profile() {
   const [isLogin, setIsLogin] = useState(true); // Флаг для переключения между логином и регистрацией
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
-  const [emailForReset, setEmailForReset] = useState(''); // Храним email для сброса пароля
+  const [emailForReset, setEmailForReset] = useState(""); // Храним email для сброса пароля
   const [isResetPassword, setIsResetPassword] = useState(false); // Флаг для переключения на форму сброса пароля
 
   // Обработка переключения между формами
   const toggleForm = () => {
     setIsLogin(!isLogin);
-    setFormData({ name: '', email: '', password: '', confirmPassword: '' }); // Очистить поля
+    setFormData({ name: "", email: "", password: "", confirmPassword: "" }); // Очистить поля
     setIsResetPassword(false); // Возвращаемся к стандартным формам
   };
 
   const resetPassword = async () => {
     try {
-      console.log(formData.email)
-      const response = await axios.post('/resetPassword', { email: emailForReset });
+      console.log(formData.email);
+      const response = await axios.post("/resetPassword", {
+        email: emailForReset,
+      });
       alert(response.data.message);
     } catch (error) {
-      console.error('Error:', error.response?.data || error.message);
-      alert('Произошла ошибка при восстановлении пароля');
+      console.error("Error:", error.response?.data || error.message);
+      alert("Произошла ошибка при восстановлении пароля");
     }
   };
-  
+
   // Обновление полей формы
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -47,39 +49,81 @@ function Profile() {
     e.preventDefault(); // Предотвращает перезагрузку страницы
     try {
       const { email, password } = formData;
-      const response = await axios.post('/login', { email, password });
-      console.log('Login Success:', response.data);
-      localStorage.setItem('id', response?.data?._id)
-      navigate('/cabinet/old')
+      const response = await axios.post("/login", { email, password });
+      console.log("Login Success:", response.data);
+      localStorage.setItem("id", response?.data?._id);
+      navigate("/cabinet/old");
     } catch (error) {
-      alert('Неверный пароль')
-      console.error('Login Error:', error.response?.data || error.message);
+      alert("Неверный пароль");
+      console.error("Login Error:", error.response?.data || error.message);
     }
+  };
+
+  const handlePayment = () => {
+    const widget = new window.cp.CloudPayments();
+
+    widget.pay(
+      "charge",
+      {
+        publicId: "pk_5ee3b6fe385674b0ea9c68d5b0f32", // Замените на ваш Public ID
+        description: "Оплата расшифровки матрицы судьбы",
+        amount: 25,
+        currency: "RUB",
+        invoiceId: "1234567", // Уникальный ID заказа
+        accountId: "user@example.com", // Почта пользователя
+        skin: "classic",
+        recurrent: {
+          interval: "Month", // Подписка будет продлеваться раз в месяц
+          period: 1, // Каждый 1 месяц
+          amount: 800, // Сумма будущих платежей
+          startDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Первый рекуррентный платеж через 3 дня
+        },
+      },
+      {
+        onSuccess: function (options) {
+          // success
+          localStorage.setItem("subscribe", true);
+        },
+        onFail: function (reason, options) {
+          // fail
+          alert("Не получилось совершить оплату, попробуйте снова");
+        },
+      }
+    );
   };
 
   // Функция регистрации
   const register = async (e) => {
     e.preventDefault(); // Предотвращает перезагрузку страницы
-    if (formData.password !== formData.confirmPassword) {
-      alert('Пароли не совпадают!');
-      return;
-    }
-    try {
-      const date = localStorage.getItem('date')
-      const { email, password, name } = formData;
-      const response = await axios.post('/register', { email, password, name });
-      console.log('Register Success:', response.data);
-      localStorage.setItem('id', response.data._id)
-      toggleForm();
-      if(date){
-        navigate('/cabinet/new')
-      }else{
-
-        navigate('/')
+    const subscribe = localStorage.getItem("subscribe");
+    console.log(subscribe);
+    if (subscribe == true || subscribe == "true") {
+      if (formData.password !== formData.confirmPassword) {
+        alert("Пароли не совпадают!");
+        return;
       }
-    } catch (error) {
-      console.error('Register Error:', error.response?.data || error.message);
-      alert("Пользователь с таким email уже существует")
+      try {
+        const date = localStorage.getItem("date");
+        const { email, password, name } = formData;
+        const response = await axios.post("/register", {
+          email,
+          password,
+          name,
+        });
+        console.log("Register Success:", response.data);
+        localStorage.setItem("id", response.data._id);
+        toggleForm();
+        if (date) {
+          navigate("/cabinet/new");
+        } else {
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Register Error:", error.response?.data || error.message);
+        alert("Пользователь с таким email уже существует");
+      }
+    } else {
+      handlePayment();
     }
   };
 
@@ -88,12 +132,15 @@ function Profile() {
     e.preventDefault();
     try {
       const response = await axios.post(`/res/${emailForReset}`);
-      console.log('Password reset request sent:', response.data);
-      alert('Инструкции по сбросу пароля отправлены на вашу почту!');
+      console.log("Password reset request sent:", response.data);
+      alert("Инструкции по сбросу пароля отправлены на вашу почту!");
       setIsResetPassword(false); // Возвращаемся на форму логина
     } catch (error) {
-      console.error('Password reset error:', error.response?.data || error.message);
-      alert('Ошибка при отправке инструкций');
+      console.error(
+        "Password reset error:",
+        error.response?.data || error.message
+      );
+      alert("Ошибка при отправке инструкций");
     }
   };
 
@@ -101,19 +148,25 @@ function Profile() {
     <div
       className="flex flex-col justify-center items-center w-[100%] h-screen"
       style={{
-        background: 'linear-gradient(90deg, rgba(182, 50, 217, 0.2) 0.11%, rgba(84, 116, 255, 0.1) 100%)',
+        background:
+          "linear-gradient(90deg, rgba(182, 50, 217, 0.2) 0.11%, rgba(84, 116, 255, 0.1) 100%)",
       }}
     >
-      <div className={`w-[500px] bg-white rounded-[30px] p-8 shadow-lg ${s.block}`}>
+      <div
+        className={`w-[500px] bg-white rounded-[30px] p-8 shadow-lg ${s.block}`}
+      >
         <h2 className="text-2xl font-bold text-center mb-6">
-          {isLogin ? 'Войти в аккаунт' : 'Регистрация'}
+          {isLogin ? "Войти в аккаунт" : "Регистрация"}
         </h2>
 
         {/* Форма для сброса пароля */}
         {isResetPassword ? (
           <div>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1" htmlFor="emailForReset">
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="emailForReset"
+              >
                 Введите ваш email для сброса пароля
               </label>
               <input
@@ -138,7 +191,10 @@ function Profile() {
           <form onSubmit={isLogin ? login : register}>
             {!isLogin && (
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1" htmlFor="name">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="name"
+                >
                   Имя пользователя
                 </label>
                 <input
@@ -167,7 +223,10 @@ function Profile() {
               />
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1" htmlFor="password">
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="password"
+              >
                 Пароль
               </label>
               <input
@@ -182,7 +241,10 @@ function Profile() {
             </div>
             {!isLogin && (
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1" htmlFor="confirmPassword">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="confirmPassword"
+                >
                   Подтвердите пароль
                 </label>
                 <input
@@ -200,7 +262,7 @@ function Profile() {
               type="submit"
               className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200"
             >
-              {isLogin ? 'Войти' : 'Зарегистрироваться'}
+              {isLogin ? "Войти" : "Зарегистрироваться"}
             </button>
           </form>
         )}
@@ -218,12 +280,12 @@ function Profile() {
         )}
 
         <p className="text-center text-sm mt-4">
-          {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
+          {isLogin ? "Нет аккаунта?" : "Уже есть аккаунт?"}
           <button
             onClick={toggleForm}
             className="text-blue-500 underline ml-1 focus:outline-none"
           >
-            {isLogin ? 'Зарегистрируйтесь' : 'Войдите'}
+            {isLogin ? "Зарегистрируйтесь" : "Войдите"}
           </button>
         </p>
       </div>

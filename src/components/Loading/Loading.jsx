@@ -12,7 +12,34 @@ function Loading({handleClose}) {
 
   const [progress, setProgress] = useState(Array(steps.length).fill(0)); // Процент выполнения для каждого шага
   const [isLoadingComplete, setIsLoadingComplete] = useState(false); // Контроль завершения загрузки
+  const handlePayment = () => {
+    const widget = new window.cp.CloudPayments();
 
+    widget.pay('charge', { 
+        publicId: 'pk_5ee3b6fe385674b0ea9c68d5b0f32', // Замените на ваш Public ID
+        description: 'Оплата расшифровки матрицы судьбы',
+        amount: 25,
+        currency: 'RUB',
+        invoiceId: '1234567', // Уникальный ID заказа
+        accountId: 'user@example.com', // Почта пользователя
+        skin: 'classic',
+        recurrent: {
+          interval: 'Month', // Подписка будет продлеваться раз в месяц
+          period: 1, // Каждый 1 месяц
+          amount: 800, // Сумма будущих платежей
+          startDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // Первый рекуррентный платеж через 3 дня
+      }
+      },
+      {
+        onSuccess: function (options) { // success
+          localStorage.setItem('subscribe', true)
+          navigate('/cabinet/new')
+        },
+        onFail: function (reason, options) { // fail
+            alert('Не получилось совершить оплату, попробуйте снова')
+        },
+    })
+};
   useEffect(() => {
     let currentStep = 0;
 
@@ -39,6 +66,7 @@ function Loading({handleClose}) {
     navigate('/cabinet/new')
   }
 
+
   if (isLoadingComplete) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-[#4a3b82] bg-opacity-95 z-10">
@@ -57,7 +85,7 @@ function Loading({handleClose}) {
             placeholder="Введите Email адрес"
             className="w-full p-2 rounded-lg mb-4 text-black"
           />
-          <button onClick={() => submition()} className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-2 rounded-lg font-semibold">
+          <button onClick={() => handlePayment()} className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-2 rounded-lg font-semibold">
             ОПЛАТИТЬ 25 РУБЛЕЙ
           </button>
           <div className="text-xs text-left mt-4 text-gray-300">

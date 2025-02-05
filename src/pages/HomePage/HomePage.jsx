@@ -34,7 +34,7 @@ function HomePage() {
         >
           <h1 className={`mt-[120px] text-white font-black text-[70px] font-sans ${s.title}`}>Матрица Судьбы</h1>
 
-          <p className={`text-white font-sans text-[23px] w-[90%] mb-3 ${s.par}`}>Откройте свои таланты, сильные стороны и природные способности, чтобы найти своё предназначение и начать менять жизнь к лучшему!</p>
+          <p className={`text-white font-sans text-[23px] w-[60%] text-center mb-3 ${s.par}`}>Откройте свои таланты, сильные стороны и природные способности, чтобы найти своё предназначение и начать менять жизнь к лучшему!</p>
           {/* <p className={`text-white font-sans text-[23px] w-[90%] mb-[50px] ${s.par}`}>чтобы найти своё предназначение и начать менять жизнь к лучшему!</p> */}
           <Matrix openPopup={openPopup}></Matrix>
         </div>
