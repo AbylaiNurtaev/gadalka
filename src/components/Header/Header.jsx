@@ -38,11 +38,11 @@ function Header() {
       </div>
 
       <div className={s.nav}>
-        <p onClick={() => navigate("/")}>Главная</p>
+        {/* <p onClick={() => navigate("/")}>Главная</p> */}
         <p onClick={() => navigate("/cabinet/old")}>Профиль</p>
-        <button onClick={() => navigate("/")}>Рассчитать матрицу</button>
+        {/* <button onClick={() => navigate("/")}>Рассчитать матрицу</button> */}
       </div>
-      <button onClick={() => navigate(path)} className={s.mobileBtn}>
+      <button onClick={() => navigate("/cabinet/old")} className={s.mobileBtn}>
         Войти
       </button>
     </div>

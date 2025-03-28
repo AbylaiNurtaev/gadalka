@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@figma/plugin-typings": "^1.109.0",
     "axios": "^1.7.9",
     "cra-template": "1.2.0",
     "jspdf": "^2.5.2",
